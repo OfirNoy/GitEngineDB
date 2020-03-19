@@ -14,7 +14,7 @@ namespace GitEngineDB.EngineParts
         private readonly Timer _timer;
         private readonly Storage _storage;                
         private readonly ConcurrentDictionary<string, string> _state;
-        private ConcurrentDictionary<string, string>[] _dirty = new ConcurrentDictionary<string, string>[DIRTY_BUFFER_COUNT];
+        private Dictionary<string, string>[] _dirty = new Dictionary<string, string>[DIRTY_BUFFER_COUNT];
         const int BUFFER_0 = 0;
         const int BUFFER_1 = 1;
         private int ACTIVE_BUFFER = 0;
@@ -29,13 +29,14 @@ namespace GitEngineDB.EngineParts
             _timer.Elapsed += CommitChangesHandler;
             _timer.Start();
 
-            _dirty[BUFFER_0] = new ConcurrentDictionary<string, string>();
-            _dirty[BUFFER_1] = new ConcurrentDictionary<string, string>();
+            _dirty[BUFFER_0] = new Dictionary<string, string>();
+            _dirty[BUFFER_1] = new Dictionary<string, string>();
         }
         #endregion
 
         public Dictionary<string, string> GetData()
         {
+            // Return shallow copy of the current state
             return _state.ToDictionary(x => x.Key, x => x.Value);         
         }
 
@@ -49,9 +50,20 @@ namespace GitEngineDB.EngineParts
         }
 
         public void SetData(string fileName, string data)
-        {
+        {            
             _state.AddOrUpdate(fileName, data, (k, v) => data);
-            _dirty[ACTIVE_BUFFER].AddOrUpdate(fileName, data, (k, v) => data);
+            lock (_dirty[ACTIVE_BUFFER])
+            {
+                var activeBuffer = _dirty[ACTIVE_BUFFER];
+                if (!activeBuffer.ContainsKey(fileName))
+                {
+                    activeBuffer.Add(fileName, data);
+                }
+                else
+                {
+                    activeBuffer[fileName] = data;
+                }
+            }
         }
 
         private void CommitChangesHandler(object source, System.Timers.ElapsedEventArgs e)
@@ -61,9 +73,12 @@ namespace GitEngineDB.EngineParts
                 _timer.Stop();
                 while (_dirty[ACTIVE_BUFFER].Count() > 0)
                 {
-                    var oldBuffer = _dirty[ACTIVE_BUFFER];                    
-                    // Swap to other buffer
-                    ACTIVE_BUFFER = ACTIVE_BUFFER == BUFFER_0 ? BUFFER_1 : BUFFER_0;
+                    var oldBuffer = _dirty[ACTIVE_BUFFER];
+                    lock (oldBuffer)
+                    {
+                        // Swap to the other buffer
+                        ACTIVE_BUFFER = ACTIVE_BUFFER == BUFFER_0 ? BUFFER_1 : BUFFER_0;
+                    }
 
                     foreach (var kp in oldBuffer)
                     {   
