@@ -82,7 +82,7 @@ namespace GitEngineDB.EngineParts
 
                     foreach (var kp in oldBuffer)
                     {   
-                       _storage.UpdateData(kp.Key, kp.Value);
+                       _storage.SetData(kp.Key, kp.Value);
                     }
                     _storage.CommitChanges();
 

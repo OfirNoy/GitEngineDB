@@ -22,30 +22,15 @@ namespace GitEngineDB.EngineParts
         public ConcurrentDictionary<string, string> CreateCache()
         {
             var root = string.Empty;
-            if (!Directory.Exists(_dbBasePath))
-            {
-                Directory.CreateDirectory(_dbBasePath);
-            }
-            else
+            if (Directory.Exists(_dbBasePath))            
             {
                 root = Repository.Discover(_dbBasePath);
             }
 
             if(string.IsNullOrEmpty(root))
             {
-                Repository.Init(_dbBasePath);
-                // This is a very strange quirk when calling Init
-                // A link file (_git_<random hex>) is created to a none existant testing folder
-                // I think that this will be fixed in future versions of LibGit2Sharp
-                // In mean time, since I expect an empty folder after the Init 
-                // I will just delete everything except .git folder
-                foreach (var dir in Directory.GetDirectories(_dbBasePath)
-                                             .Where(d => d != Path.Combine(_dbBasePath, ".git")))
-                {
-                    Directory.Delete(dir);
-                }
+                Repository.Init(_dbBasePath);                
             }
-
             else if(root != Path.Combine(Path.GetFullPath(_dbBasePath), ".git\\"))
             {
                 throw new InvalidOperationException($"Directory {_dbBasePath} is a sub directory of an existing repository, unable to create a repository");
@@ -59,7 +44,7 @@ namespace GitEngineDB.EngineParts
                 {
                     CommitChanges();
                 }
-                foreach(var item in status)
+                foreach(var item in status.Where(f => f.FilePath.StartsWith("GEDB")))
                 {                    
                     dbCache.TryAdd(item.FilePath, File.ReadAllText(Path.Combine(_dbBasePath, item.FilePath)));
                 }                
@@ -67,7 +52,7 @@ namespace GitEngineDB.EngineParts
             return dbCache;
         }
 
-        public void UpdateData(string fileName, string data)
+        public void SetData(string fileName, string data)
         {
             lock (_dbBasePath)
             {
