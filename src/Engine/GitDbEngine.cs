@@ -1,6 +1,5 @@
 ﻿using GitEngineDB.EngineParts;
 using GitEngineDB.Logging;
-using Serilog;
 using System.Text.Json;
 
 namespace GitEngineDB.Engine
@@ -9,10 +8,10 @@ namespace GitEngineDB.Engine
     {
         private Cache _cache;
 
-        public GitDbEngine(string dbBasePath, string user, string userEmail, ILogger logger = null)
+        public GitDbEngine(string dbBasePath, string user, string userEmail, EngineConfigurationOptions options = null)
         {
-            DbLogger.Init(logger);
-            _cache = new Cache(dbBasePath, user, userEmail);
+            DbLogger.Init(options?.Logger);
+            _cache = new Cache(dbBasePath, user, userEmail, options ?? new EngineConfigurationOptions());
         }
         public T GetData<T>(string dataId)
         {

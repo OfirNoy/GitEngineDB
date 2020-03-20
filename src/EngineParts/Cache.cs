@@ -19,14 +19,14 @@ namespace GitEngineDB.EngineParts
         const int BUFFER_0 = 0;
         const int BUFFER_1 = 1;
         private int ACTIVE_BUFFER = 0;
-
+                
         #region Constructor
-        public Cache(string dbBasePath, string user, string userEmail)
+        public Cache(string dbBasePath, string user, string userEmail, EngineConfigurationOptions options)
         {
             _storage = new Storage(dbBasePath, user, userEmail);
             _state = _storage.CreateCache();
             
-            _timer = new Timer(300);
+            _timer = new Timer(options.WriteIntervals);
             _timer.Elapsed += CommitChangesHandler;
             _timer.Start();
 
