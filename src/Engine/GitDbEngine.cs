@@ -19,6 +19,11 @@ namespace GitEngineDB.Engine
             return JsonSerializer.Deserialize<T>(_cache.GetData($"GEDB.{dataId}"));
         }
 
+        public string GetRawData(string dataId)
+        {
+            return _cache.GetData($"GEDB.{dataId}");
+        }
+
         public void SetData<T>(string dataId, T data)
         {
             _cache.SetData($"GEDB.{dataId}", JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true }));
