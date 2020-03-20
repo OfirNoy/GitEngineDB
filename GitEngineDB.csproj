@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>0.0.6</Version>
+    <Version>0.0.7</Version>
     <Company />
     <Authors>Ofir Noy</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -14,6 +14,7 @@
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Git DB Database</PackageTags>
     <Description>A very simple storage library based on Git</Description>
+    <PackageReleaseNotes>Removed methods that receive string data types</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
