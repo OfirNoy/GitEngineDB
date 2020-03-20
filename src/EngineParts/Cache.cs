@@ -5,6 +5,7 @@ using System.Timers;
 using System.Collections.Concurrent;
 using GitEngineDB.Logging;
 using LibGit2Sharp;
+using System.Threading.Tasks;
 
 namespace GitEngineDB.EngineParts
 {
@@ -65,7 +66,10 @@ namespace GitEngineDB.EngineParts
                 }
             }
         }
-
+        public Task CommitChanges()
+        {
+            return Task.Factory.StartNew(() => _storage.CommitChanges());
+        }
         private void CommitChangesHandler(object source, System.Timers.ElapsedEventArgs e)
         {
             try
@@ -83,8 +87,7 @@ namespace GitEngineDB.EngineParts
                     foreach (var kp in oldBuffer)
                     {   
                        _storage.SetData(kp.Key, kp.Value);
-                    }
-                    _storage.CommitChanges();
+                    }                    
 
                     oldBuffer.Clear();
                 }

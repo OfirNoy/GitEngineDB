@@ -28,9 +28,15 @@ namespace GitEngineDB.Engine
         {
             _cache.SetData($"GEDB.{dataId}", JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true }));
         }
+
         public void SetData(string dataId, string data)
         {
             _cache.SetData($"GEDB.{dataId}", data);
+        }
+
+        public void CommitChanges()
+        {
+            _cache.CommitChanges();
         }
     }
 }
